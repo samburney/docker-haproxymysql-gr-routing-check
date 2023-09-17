@@ -1,0 +1,27 @@
+services:
+  haproxy:
+    image: 'haproxy:lts'
+    restart: 'unless-stopped'
+    env_file:
+      - '.env'
+    volumes:
+      - './data/haproxy/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg'
+    ports:
+      - '8404:8404/tcp'
+      - '3306:3306/tcp'
+      - '3307:3307/tcp'
+
+  xinetd:
+    image: 'local/xinetd:latest'
+    build:
+      context: '.'
+      dockerfile: 'Dockerfile.xinetd'
+    restart: 'unless-stopped'
+    env_file:
+      - '.env'
+    volumes:
+      - './data/xinetd/etc/xinetd.d:/etc/xinetd.d'
+      - './mysql_gr_routing_check:/usr/local/share/mysql_gr_routing_check'
+    ports:
+      - '6446:6446/tcp'
+      - '6447:6447/tcp'

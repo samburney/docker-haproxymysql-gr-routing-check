@@ -1,0 +1,15 @@
+FROM debian:bookworm
+
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y -qqq --no-install-recommends \
+        xinetd busybox mariadb-client && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/
+
+RUN busybox --install /usr/local/bin
+
+RUN echo "\n\
+mysql_gr_routing_check_write 6446/tcp       # MySQL Group Replication\n\
+mysql_gr_routing_check_read  6447/tcp       # MySQL Group Replication" >>  /etc/services
+
+ENTRYPOINT ["/usr/sbin/xinetd","-dontfork","-filelog","/dev/stderr"]

@@ -1,0 +1,38 @@
+defaults 
+    timeout connect 5s
+    timeout client 1m
+    timeout server 1m
+
+frontend stats
+    mode http
+    bind *:8404
+    stats enable
+    stats uri /stats
+    stats refresh 10s
+    stats admin if LOCALHOST
+
+frontend mysql-gr-front_write
+    bind *:3307
+    mode tcp
+    default_backend mysql-gr-back_write
+
+backend mysql-gr-back_write
+    mode tcp
+    balance leastconn
+    option httpchk
+    server mysql1 mysql1:3306 check port 6446 inter 1000 rise 1 fall 2 on-marked-up shutdown-backup-sessions
+    server mysql2 mysql2:3306 check port 6446 inter 1000 rise 1 fall 2 backup
+    server mysql3 mysql3:3306 check port 6446 inter 1000 rise 1 fall 2 backup
+
+frontend mysql-gr-front_read
+    bind *:3308
+    mode tcp
+    default_backend mysql-gr-back_read
+
+backend mysql-gr-back_read
+    mode tcp
+    balance leastconn
+    option httpchk
+    server mysql1 mysql1:3306 check port 6447 inter 1000 rise 1 fall 2
+    server mysql2 mysql2:3306 check port 6447 inter 1000 rise 1 fall 2
+    server mysql3 mysql3:3306 check port 6447 inter 1000 rise 1 fall 2
